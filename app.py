@@ -38,7 +38,7 @@ class PerformanceMonitor:
         self.request_times = {}
         self.error_counts = {}
     
-    def log_request(self, endpoint, duration, success=True):
+    def log_request(self, endpoint, duration, success=True, error_msg=None):
         if endpoint not in self.request_times:
             self.request_times[endpoint] = []
         self.request_times[endpoint].append(duration)
@@ -351,7 +351,7 @@ def predict():
                     'data': []
                 }), 400
             
-            days_to_forecast = (end_date - end_date).days + 1
+            days_to_forecast = (end_date - start_date).days + 1
             logging.info(f"Forecasting from {start_date} to {end_date} ({days_to_forecast} days)")
         
         # Process predictions for each product

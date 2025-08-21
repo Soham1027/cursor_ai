@@ -273,7 +273,7 @@ def generate_future_features(start_date, days, product_df, holiday_dates=None, c
         is_holiday = 1 if holiday_dates and current_date in holiday_dates else 0
         is_weekend = 1 if current_date.weekday() >= 5 else 0
         
-        # Basic calendar features
+        # Basic calendar features (must match clean_and_preprocess exactly)
         day = current_date.day
         month = current_date.month
         year = current_date.year
@@ -283,7 +283,11 @@ def generate_future_features(start_date, days, product_df, holiday_dates=None, c
         day_of_year = current_date.timetuple().tm_yday
         week_of_year = current_date.isocalendar()[1]
         
-        # Cyclical features
+        # Month start/end indicators (must match clean_and_preprocess)
+        month_end = 1 if current_date.is_month_end else 0
+        month_start = 1 if current_date.is_month_start else 0
+        
+        # Cyclical features (must match clean_and_preprocess)
         dow_sin = np.sin(2 * np.pi * day_of_week / 7)
         dow_cos = np.cos(2 * np.pi * day_of_week / 7)
         month_sin = np.sin(2 * np.pi * month / 12)
@@ -291,17 +295,18 @@ def generate_future_features(start_date, days, product_df, holiday_dates=None, c
         day_sin = np.sin(2 * np.pi * day / 31)
         day_cos = np.cos(2 * np.pi * day / 31)
         
-        # Special date indicators
+        # Seasonal patterns (must match clean_and_preprocess)
         is_month_start = 1 if day in [1, 2, 3] else 0
         is_month_end = 1 if day in [28, 29, 30, 31] else 0
         is_quarter_start = 1 if month in [1, 4, 7, 10] else 0
         is_quarter_end = 1 if month in [3, 6, 9, 12] else 0
         
-        # Interaction features
+        # Interaction features (must match clean_and_preprocess)
         weekend_price_effect = is_weekend * stats_data['price_ratio']
         seasonal_price_effect = season * stats_data['price_ratio']
         
-        # Build feature vector (order must match clean_and_preprocess)
+        # Build feature vector in EXACT order as clean_and_preprocess
+        # This order is critical for the model to work correctly
         feature_vector = [
             day, month, year, day_of_week, is_weekend, quarter, season,
             stats_data['price_ratio'], day_of_year, stats_data['average_selling_price'],
@@ -313,7 +318,7 @@ def generate_future_features(start_date, days, product_df, holiday_dates=None, c
         
         features.append(feature_vector)
     
-    # Define column names (must match clean_and_preprocess)
+    # Define column names in EXACT order as clean_and_preprocess
     columns = [
         'day', 'month', 'year', 'day_of_week', 'is_weekend', 'quarter', 'season',
         'price_ratio', 'day_of_year', 'average_selling_price', 'standard_price',
